@@ -36,24 +36,34 @@ struct CalendarView: View {
             let days = generateDaysInMonth(for: selectedDate)
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7)) {
                 ForEach(days, id: \.self) { date in
-                    Text(date == nil ? "" : "\(calendar.component(.day, from: date!))")
-                        .font(.body)
-                        .frame(width: 40, height: 40)
-                        .background(isSameDay(date, selectedDate) ? Color.blue.opacity(0.8) : Color.clear)
-                        .foregroundColor(isWeekend(date) ? .red : .primary)
-                        .cornerRadius(20)
-                        .onTapGesture {
-                            if let validDate = date {
-                                selectedDate = validDate
-                            }
+                    ZStack {
+                        // 현재 날짜일 경우 노란색 원형 배경
+                        if isToday(date) {
+                            Circle()
+                                .fill(Color.yellow)
+                                .frame(width: 40, height: 40) // 원형 배경
                         }
+                        // 선택된 날짜일 경우 파란색 원형 배경
+                        else if isSameDay(date, selectedDate) {
+                            Circle()
+                                .fill(Color.blue.opacity(0.2))
+                                .frame(width: 40, height: 40) // 원형 배경
+                        }
+                        
+                        // 날짜 텍스트
+                        Text(date == nil ? "" : "\(calendar.component(.day, from: date!))")
+                            .font(.body)
+                            .frame(width: 40, height: 40)
+                            .foregroundColor(isWeekend(date) ? .red : .primary) // 주말 색상
+                            .onTapGesture {
+                                if let validDate = date {
+                                    selectedDate = validDate
+                                }
+                            }
+                    }
                 }
             }
             .padding()
-            
-            // 선택된 날짜 표시
-            Text("선택한 날짜: \(dateFormatter.string(from: selectedDate))")
-                .padding()
         }
     }
     
@@ -92,5 +102,10 @@ struct CalendarView: View {
         guard let date1 = date1 else { return false }
         return calendar.isDate(date1, inSameDayAs: date2)
     }
+    
+    // 현재 날짜인지 확인
+    private func isToday(_ date: Date?) -> Bool {
+        guard let date = date else { return false }
+        return calendar.isDateInToday(date)
+    }
 }
-
